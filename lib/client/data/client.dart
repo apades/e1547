@@ -16,25 +16,26 @@ import 'package:e1547/user/user.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:mutex/mutex.dart';
 
-export 'package:dio/dio.dart' show DioError;
-
-late final Client client = Client();
+typedef ClientException = DioError;
 
 class Client {
   late Dio dio;
   late DioCacheManager cacheManager;
 
+  final AppInfo appInfo;
+  final Settings settings;
+
   Future<bool>? initialized;
 
-  Client() {
+  Client({required this.settings, required this.appInfo}) {
     settings.host.addListener(initialize);
     settings.credentials.addListener(initialize);
     initialize();
   }
 
   bool get isSafe => settings.host.value != settings.customHost.value;
-
   String get host => settings.host.value;
+  Credentials? get credentials => settings.credentials.value;
 
   Future<bool> initialize() async {
     Future<bool> init() async {
@@ -57,7 +58,7 @@ class Client {
       if (credentials != null) {
         try {
           await tryLogin(credentials.username, credentials.password);
-        } on DioError catch (e) {
+        } on ClientException catch (e) {
           if (e.type != DioErrorType.other) {
             logout();
           }
@@ -116,7 +117,7 @@ class Client {
       return;
     }
     if (_currentUser == null) {
-      _currentUser = await client.authedUser();
+      _currentUser = await authedUser();
       List<String> updated = _currentUser!.blacklistedTags.split('\n');
       updated = updated.trim();
       updated.removeWhere((element) => element.isEmpty);
@@ -125,7 +126,7 @@ class Client {
     if (_currentAvatar == null) {
       int? avatarId = _currentUser?.avatarId;
       if (avatarId != null) {
-        Post post = await client.post(avatarId);
+        Post post = await this.post(avatarId);
         _currentAvatar = post;
       }
     }
@@ -212,10 +213,7 @@ class Client {
             favorites(page, limit: limit, force: force),
     };
 
-    for (MapEntry<
-        RegExp,
-        Future<List<Post>> Function(
-            RegExpMatch match, String? result)> entry in regexes.entries) {
+    for (final entry in regexes.entries) {
       RegExpMatch? match = entry.key.firstMatch(search!.trim());
       if (match != null) {
         return entry.value(match, search);
@@ -335,7 +333,7 @@ class Client {
     bool reverse = false,
     bool? force,
   }) async {
-    Pool pool = await client.pool(poolId);
+    Pool pool = await this.pool(poolId);
     List<int> ids = reverse ? pool.postIds.reversed.toList() : pool.postIds;
     int limit = 80;
     int lower = ((page - 1) * limit);
@@ -351,7 +349,7 @@ class Client {
     List<int> pageIds = ids.sublist(lower, upper);
     String filter = 'id:${pageIds.join(',')}';
 
-    List<Post> posts = await client.posts(1, search: filter, force: force);
+    List<Post> posts = await this.posts(1, search: filter, force: force);
     Map<int, Post> table = {for (Post e in posts) e.id: e};
     posts = (pageIds.map((e) => table[e]).toList()
           ..removeWhere((e) => e == null))
@@ -406,7 +404,7 @@ class Client {
       int tagPage = getTagPage(i);
       int end = (length > tagPage * max) ? tagPage * max : length;
       List<String?> tagSet = tags.sublist((tagPage - 1) * max, end);
-      posts.addAll(await client.posts(getSitePage(i),
+      posts.addAll(await this.posts(getSitePage(i),
           search: '~${tagSet.join(' ~')}', force: force));
     }
     posts.sort((one, two) => two.id.compareTo(one.id));
@@ -589,7 +587,7 @@ class Client {
             'page': page,
           },
           forceRefresh: force,
-      keyExtras: {
+          keyExtras: {
             'search[title]': search,
           },
         )
@@ -649,7 +647,7 @@ class Client {
 
   Future<List> tag(String search, {int? category, bool? force}) async {
     await initialized;
-    var body = await dio
+    final body = await dio
         .getWithCache(
           'tags.json',
           cacheManager,
@@ -672,7 +670,7 @@ class Client {
   Future<List> autocomplete(String search, {int? category, bool? force}) async {
     await initialized;
     if (category == null) {
-      var body = await dio
+      final body = await dio
           .getWithCache(
             'tags/autocomplete.json',
             cacheManager,
@@ -696,7 +694,7 @@ class Client {
 
   Future<List<Comment>> comments(int postId, String page, {bool? force}) async {
     await initialized;
-    var body = await dio
+    final body = await dio
         .getWithCache(
           'comments.json',
           cacheManager,
@@ -706,7 +704,7 @@ class Client {
             'page': page,
           },
           forceRefresh: force,
-      keyExtras: {
+          keyExtras: {
             'search[post_id]': postId,
           },
         )
@@ -795,7 +793,7 @@ class Client {
     bool? force,
   }) async {
     String? title = search?.isNotEmpty ?? false ? search : null;
-    var body = await dio
+    final body = await dio
         .getWithCache(
           'forum_topics.json',
           cacheManager,
@@ -804,7 +802,7 @@ class Client {
             'search[title_matches]': title,
           },
           forceRefresh: force,
-      keyExtras: {
+          keyExtras: {
             'search[title_matches]': title,
           },
         )
@@ -833,7 +831,7 @@ class Client {
   }
 
   Future<List<Reply>> replies(int topicId, String page, {bool? force}) async {
-    var body = await dio
+    final body = await dio
         .getWithCache(
           'forum_posts.json',
           cacheManager,

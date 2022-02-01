@@ -2,6 +2,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppIcon extends StatelessWidget {
@@ -26,6 +27,8 @@ class AppIcon extends StatelessWidget {
 class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    AppInfo appInfo = Provider.of<AppInfo>(context);
+
     PreferredSizeWidget appBarWidget() {
       return DefaultAppBar(
         title: Text('About'),
@@ -84,16 +87,18 @@ class AboutPage extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: FaIcon(FontAwesomeIcons.github),
-                      onPressed: () =>
-                          launch('https://github.com/' + appInfo.github),
-                    ),
-                    IconButton(
-                      icon: FaIcon(FontAwesomeIcons.discord),
-                      onPressed: () => launch(
-                          'https://discord.com/invite/' + appInfo.discord),
-                    ),
+                    if (appInfo.github != null)
+                      IconButton(
+                        icon: FaIcon(FontAwesomeIcons.github),
+                        onPressed: () =>
+                            launch('https://github.com/' + appInfo.github!),
+                      ),
+                    if (appInfo.discord != null)
+                      IconButton(
+                        icon: FaIcon(FontAwesomeIcons.discord),
+                        onPressed: () => launch(
+                            'https://discord.com/invite/' + appInfo.discord!),
+                      ),
                   ],
                 ),
               )),
@@ -116,9 +121,11 @@ class VersionButton extends StatefulWidget {
 }
 
 class _VersionButtonState extends State<VersionButton> {
-  Future<List<AppVersion>?> newVersions = getNewVersions();
+  late Future<List<AppVersion>?> newVersions = getNewVersions(context);
 
   Future<void> versionDialog(List<AppVersion>? versions) async {
+    AppInfo appInfo = Provider.of<AppInfo>(context, listen: false);
+
     Future<void> dialog(Widget message, List<Widget>? actions) async {
       return showDialog(
         context: context,
@@ -201,7 +208,7 @@ class _VersionButtonState extends State<VersionButton> {
           TextButton(
             child: Text('DOWNLOAD'),
             onPressed: () => launch(
-                'https://github.com/' + appInfo.github + '/releases/latest'),
+                'https://github.com/' + appInfo.github! + '/releases/latest'),
           )
         ],
       );

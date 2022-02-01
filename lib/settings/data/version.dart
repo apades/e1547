@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'app_info.dart';
 
@@ -53,7 +55,7 @@ class AppVersion extends Comparable<AppVersion> {
 
 List<AppVersion>? githubData;
 
-Future<List<AppVersion>?> getVersions() async {
+Future<List<AppVersion>?> getVersions(BuildContext context) async {
   if (kDebugMode) {
     return [];
   }
@@ -62,6 +64,7 @@ Future<List<AppVersion>?> getVersions() async {
       baseUrl: 'https://api.github.com/',
     ));
     try {
+      AppInfo appInfo = Provider.of<AppInfo>(context, listen: false);
       List<dynamic> releases = await dio
           .get('repos/${appInfo.github}/releases')
           .then((response) => response.data);
@@ -82,8 +85,9 @@ Future<List<AppVersion>?> getVersions() async {
   return githubData;
 }
 
-Future<List<AppVersion>?> getNewVersions() async {
-  List<AppVersion>? releases = await getVersions();
+Future<List<AppVersion>?> getNewVersions(BuildContext context) async {
+  AppInfo appInfo = Provider.of<AppInfo>(context, listen: false);
+  List<AppVersion>? releases = await getVersions(context);
   if (releases != null) {
     releases = List.from(releases);
     AppVersion current = AppVersion(version: appInfo.version);

@@ -1,13 +1,20 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/interface/interface.dart';
+import 'package:e1547/settings/data/settings.dart';
 
 import 'comment.dart';
 
 class CommentController extends CursorDataController<Comment>
     with RefreshableController, AccountableController {
   final int postId;
+  final Client client;
+  final Settings settings;
 
-  CommentController({required this.postId});
+  CommentController({
+    required this.postId,
+    required this.client,
+    required this.settings,
+  });
 
   @override
   Future<List<Comment>> provide(String page, bool force) =>
@@ -19,7 +26,7 @@ class CommentController extends CursorDataController<Comment>
   @override
   void disposeItems(List<Comment> items) async {
     if (itemList != null) {
-      for (var comment in itemList!) {
+      for (final comment in itemList!) {
         comment.dispose();
       }
     }

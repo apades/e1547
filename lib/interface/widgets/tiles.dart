@@ -2,6 +2,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:provider/provider.dart';
 
 const defaultTileHeightFactor = 1.2;
 
@@ -34,6 +35,7 @@ class TileLayoutScope extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
     return ValueListenableBuilder<int>(
       valueListenable: settings.tileSize,
       builder: (context, tileSize, child) {

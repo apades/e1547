@@ -3,6 +3,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PostDetailImage extends StatelessWidget {
@@ -74,6 +75,8 @@ class _PostDetailImageToggleState extends State<PostDetailImageToggle> {
   Post? replacement;
 
   Future<void> onToggle() async {
+    Settings settings = Provider.of<Settings>(context, listen: false);
+    Client client = Provider.of(context, listen: false);
     setState(() {
       loading = true;
     });

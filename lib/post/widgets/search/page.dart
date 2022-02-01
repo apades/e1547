@@ -7,35 +7,38 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class PostsPage extends StatefulWidget {
   final bool canSelect;
-  final PostController controller;
   final PreferredSizeWidget Function(BuildContext) appBarBuilder;
   final List<Widget>? drawerActions;
 
   PostsPage({
     this.canSelect = true,
-    required this.controller,
     required this.appBarBuilder,
     this.drawerActions,
-  }) : super(key: ObjectKey(controller));
+  });
 
   @override
   State<StatefulWidget> createState() => _PostsPageState();
 }
 
 class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
+  PostController? controller;
   Set<Post> selections = {};
 
   @override
-  Map<ChangeNotifier, VoidCallback> get listeners => {
-        widget.controller: updatePage,
-      };
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    controller = attach<PostController>(
+      current: controller,
+      builder: (value) => {value: updatePage},
+    );
+  }
 
   void updatePage() {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {
-          selections.removeWhere((element) =>
-              !(widget.controller.itemList?.contains(element) ?? true));
+          selections.removeWhere(
+              (element) => !(controller!.itemList?.contains(element) ?? true));
         });
       }
     });
@@ -43,15 +46,16 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
 
   @override
   Widget build(BuildContext context) {
+    PostController controller = this.controller!;
     Widget? floatingActionButton() {
-      if (widget.controller.canSearch) {
+      if (controller.canSearch) {
         return SheetFloatingActionButton(
           actionIcon: Icons.search,
           builder: (context, actionController) => ControlledTextWrapper(
             actionController: actionController,
             textController:
-                TextEditingController(text: widget.controller.search.value),
-            submit: (value) => widget.controller.search.value = sortTags(value),
+                TextEditingController(text: controller.search.value),
+            submit: (value) => controller.search.value = sortTags(value),
             builder: (context, controller, submit) => AdvancedTagInput(
               labelText: 'Tags',
               controller: controller,
@@ -75,9 +79,8 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
               ],
             ),
           ),
-          if (widget.controller.canDeny)
-            DrawerDenySwitch(controller: widget.controller),
-          DrawerCounter(controller: widget.controller),
+          if (controller.canDeny) DrawerDenySwitch(controller: controller),
+          DrawerCounter(controller: controller),
         ],
       );
     }
@@ -88,7 +91,7 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => PostDetailGallery(
-              controller: widget.controller,
+              controller: controller,
               initialPage: index,
             ),
           ));
@@ -98,7 +101,7 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
 
     TileLayoutTileBuilder tileBuilder = defaultStaggerTileBuilder(
       (index) {
-        PostFile image = widget.controller.itemList![index].sample;
+        PostFile image = controller.itemList![index].sample;
         return Size(image.width.toDouble(), image.height.toDouble());
       },
     );
@@ -108,18 +111,17 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
       builder: (context, crossAxisCount, tileBuilder) => SelectionScope<Post>(
         selections: selections,
         builder: (context, selections, onChanged) => RefreshablePage(
-          refreshController: widget.controller.refreshController,
+          refreshController: controller.refreshController,
           appBar: selections.isEmpty
               ? widget.appBarBuilder(context)
               : PostSelectionAppBar(
                   selections: selections,
                   onChanged: onChanged,
-                  onSelectAll: () => widget.controller.itemList!.toSet()),
-          drawer: defaultNavigationDrawer(),
+                  onSelectAll: () => controller.itemList!.toSet()),
+          drawer: NavigationDrawer(),
           endDrawer: endDrawer(),
           floatingActionButton: floatingActionButton(),
-          refresh: () =>
-              widget.controller.refresh(background: true, force: true),
+          refresh: () => controller.refresh(background: true, force: true),
           builder: (context) => PagedStaggeredGridView(
             key: joinKeys(['posts', crossAxisCount]),
             physics: BouncingScrollPhysics(),
@@ -128,9 +130,9 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
             showNoMoreItemsIndicatorAsGridChild: false,
             padding: defaultListPadding,
             addAutomaticKeepAlives: false,
-            pagingController: widget.controller,
+            pagingController: controller,
             builderDelegate: defaultPagedChildBuilderDelegate(
-              pagingController: widget.controller,
+              pagingController: controller,
               itemBuilder: (context, Post item, index) => SelectionItemOverlay(
                 enabled: widget.canSelect,
                 padding: EdgeInsets.all(4),
@@ -147,7 +149,7 @@ class _PostsPageState extends State<PostsPage> with ListenerCallbackMixin {
                 SliverStaggeredGridDelegateWithFixedCrossAxisCount(
               staggeredTileBuilder: tileBuilder,
               crossAxisCount: crossAxisCount,
-              staggeredTileCount: widget.controller.itemList?.length,
+              staggeredTileCount: controller.itemList?.length,
             ),
           ),
         ),

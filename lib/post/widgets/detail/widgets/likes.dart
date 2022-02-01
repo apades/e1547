@@ -3,6 +3,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
+import 'package:provider/provider.dart';
 
 class LikeDisplay extends StatelessWidget {
   final Post post;
@@ -11,6 +12,7 @@ class LikeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Client client = Provider.of<Client>(context);
     return Column(
       children: [
         Row(

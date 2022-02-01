@@ -5,6 +5,7 @@ import 'package:e1547/post/post.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PostLoadingPage extends StatefulWidget {
   final int id;
@@ -16,7 +17,13 @@ class PostLoadingPage extends StatefulWidget {
 }
 
 class _PostLoadingPageState extends State<PostLoadingPage> {
-  late Future<Post> post = client.post(widget.id);
+  late Future<Post> post;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    post = Provider.of<Client>(context).post(widget.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +48,13 @@ class PoolLoadingPage extends StatefulWidget {
 }
 
 class _PoolLoadingPageState extends State<PoolLoadingPage> {
-  late Future<Pool> pool = client.pool(widget.id);
+  late Future<Pool> pool;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    pool = Provider.of<Client>(context).pool(widget.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +80,13 @@ class TopicLoadingPage extends StatefulWidget {
 }
 
 class _TopicLoadingPageState extends State<TopicLoadingPage> {
-  late Future<Topic> topic = client.topic(widget.id);
+  late Future<Topic> topic;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    topic = Provider.of<Client>(context).topic(widget.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +114,13 @@ class ReplyLoadingPage extends StatefulWidget {
 }
 
 class _ReplyLoadingPageState extends State<ReplyLoadingPage> {
-  late Future<Reply> reply = client.reply(widget.id);
+  late Future<Reply> reply;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    reply = Provider.of<Client>(context).reply(widget.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +151,13 @@ class UserLoadingPage extends StatefulWidget {
 }
 
 class _UserLoadingPageState extends State<UserLoadingPage> {
-  late Future<User> user = client.user(widget.id.toString());
+  late Future<User> user;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    user = Provider.of<Client>(context).user(widget.id.toString());
+  }
 
   @override
   Widget build(BuildContext context) {

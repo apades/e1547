@@ -1,6 +1,7 @@
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class FollowsPage extends StatefulWidget {
   @override
@@ -11,7 +12,7 @@ class _FollowsPageState extends State<FollowsPage> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: settings.splitFollows,
+      valueListenable: Provider.of<Settings>(context).splitFollows,
       builder: (context, value, child) =>
           value ? FollowsSplitPage() : FollowsCombinedPage(),
     );

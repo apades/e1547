@@ -6,6 +6,7 @@ import 'package:e1547/settings/settings.dart';
 import 'package:e1547/user/user.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'grid.dart';
 
@@ -17,6 +18,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+    Client client = Provider.of<Client>(context);
     return Scaffold(
       appBar: DefaultAppBar(
         title: Text('Settings'),

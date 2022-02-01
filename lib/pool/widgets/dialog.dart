@@ -2,6 +2,7 @@ import 'package:e1547/dtext/dtext.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 import 'actions.dart';
@@ -25,6 +26,8 @@ class PoolDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+
     Widget body() {
       return ConstrainedBox(
         constraints: BoxConstraints(

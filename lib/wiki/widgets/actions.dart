@@ -24,17 +24,25 @@ class _TagListActionsState extends State<TagListActions>
 
   final List<String> actionless = ['help:', 'e621:'];
 
-  @override
-  Map<ChangeNotifier, VoidCallback> get initListeners => {
-        settings.denylist: updateLists,
-        settings.follows: updateLists,
-      };
+  Settings? settings;
 
   void updateLists() {
     setState(() {
-      denylist = List.from(settings.denylist.value);
-      follows = List.from(settings.follows.value);
+      denylist = List.from(settings!.denylist.value);
+      follows = List.from(settings!.follows.value);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    settings = attach<Settings>(
+      current: settings,
+      builder: (value) => {
+        value.denylist: updateLists,
+        value.follows: updateLists,
+      },
+    );
   }
 
   @override
@@ -65,7 +73,7 @@ class _TagListActionsState extends State<TagListActions>
                   );
                 }
               }
-              settings.follows.value = follows;
+              settings!.follows.value = follows;
             },
             icon: CrossFade(
               showChild: following,
@@ -85,7 +93,7 @@ class _TagListActionsState extends State<TagListActions>
                 denylist.add(widget.tag);
                 if (following) {
                   follows.removeWhere((element) => element.tags == widget.tag);
-                  settings.follows.value = follows;
+                  settings!.follows.value = follows;
                 }
               }
               updateBlacklist(

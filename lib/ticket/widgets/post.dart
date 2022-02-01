@@ -8,6 +8,7 @@ import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class PostReportImage extends StatelessWidget {
   final Post post;
@@ -94,7 +95,8 @@ class _PostReportScreenState extends State<PostReportScreen> {
                         curve: Curves.easeInOut,
                       );
                       if (await validateCall(
-                        () => client.reportPost(
+                        () => Provider.of<Client>(context, listen: false)
+                            .reportPost(
                           widget.post.id,
                           reportIds[type!]!,
                           reasonController.text.trim(),
@@ -203,7 +205,8 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
                         curve: Curves.easeInOut,
                       );
                       if (await validateCall(
-                        () => client.flagPost(
+                        () => Provider.of<Client>(context, listen: false)
+                            .flagPost(
                           widget.post.id,
                           flagName[type]!,
                           parent: int.tryParse(parentController.text),

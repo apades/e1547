@@ -26,7 +26,7 @@ TextSpan plainText(
           ? Theme.of(context).textTheme.bodyText1!.color!.withOpacity(0.5)
           : state.link
               ? Colors.blue[400]
-              : Theme.of(context).textTheme.bodyText1!.color!,
+              : null,
       fontWeight: state.bold ? FontWeight.bold : null,
       fontStyle: state.italic ? FontStyle.italic : null,
       fontSize: state.header ? 18 : null,

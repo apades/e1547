@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:e1547/interface/interface.dart';
-import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
@@ -45,7 +44,7 @@ class Post with ChangeNotifier {
   VideoPlayerController? controller;
 
   static List<Post> loadedVideos = [];
-  static bool _muteVideos = settings.muteVideos.value;
+  static bool _muteVideos = true;
 
   static bool get muteVideos => _muteVideos;
 

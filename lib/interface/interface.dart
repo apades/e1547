@@ -6,6 +6,7 @@ export 'data/text.dart';
 export 'data/theme.dart';
 export 'data/updater.dart';
 export 'data/action.dart';
+export 'data/provider.dart';
 // widgets
 export 'widgets/action.dart';
 export 'widgets/animation.dart';
@@ -25,7 +26,7 @@ export 'widgets/range_dialog.dart';
 export 'widgets/refreshing.dart';
 export 'widgets/refreshing.dart';
 export 'widgets/shadows.dart';
-export 'widgets/sheet_editor.dart';
+export 'widgets/sheet.dart';
 export 'widgets/snackbar.dart';
 export 'widgets/startup.dart';
 export 'widgets/text_editor.dart';

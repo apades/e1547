@@ -1,6 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'comment.dart';
 
@@ -20,8 +21,10 @@ Future<bool> replyComment({
   return writeComment(context: context, postId: comment.postId, text: body);
 }
 
-Future<bool> editComment(
-        {required BuildContext context, required Comment comment}) =>
+Future<bool> editComment({
+  required BuildContext context,
+  required Comment comment,
+}) =>
     writeComment(postId: comment.postId, context: context, comment: comment);
 
 Future<bool> writeComment(
@@ -38,10 +41,11 @@ Future<bool> writeComment(
         validate: (context, text) async {
           if (text.isNotEmpty) {
             try {
-              await client.postComment(postId, text, comment: comment);
+              await Provider.of<Client>(context, listen: false)
+                  .postComment(postId, text, comment: comment);
               sent = true;
               return true;
-            } on DioError {
+            } on ClientException {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 duration: Duration(seconds: 1),
                 content: Text('Failed to send comment!'),
@@ -63,7 +67,8 @@ extension Voting on Comment {
       {required BuildContext context,
       required bool upvote,
       required bool replace}) async {
-    if (await client.voteComment(id, upvote, replace)) {
+    if (await Provider.of<Client>(context, listen: false)
+        .voteComment(id, upvote, replace)) {
       if (voteStatus == VoteStatus.unknown) {
         if (upvote) {
           score += 1;

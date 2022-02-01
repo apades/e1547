@@ -1,6 +1,7 @@
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AdvancedSettingsPage extends StatefulWidget {
   @override
@@ -10,6 +11,8 @@ class AdvancedSettingsPage extends StatefulWidget {
 class _AdvancedSettingsPageState extends State<AdvancedSettingsPage> {
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+
     return Scaffold(
       appBar: DefaultAppBar(
         title: Text('Advanced settings'),

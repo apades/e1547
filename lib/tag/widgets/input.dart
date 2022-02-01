@@ -5,6 +5,7 @@ import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:provider/provider.dart';
 
 typedef SubmitString = void Function(String result);
 
@@ -45,6 +46,7 @@ class _TagInputState extends State<TagInput> {
 
   @override
   Widget build(BuildContext context) {
+    Client client = Provider.of<Client>(context);
     return TypeAheadField(
       direction: AxisDirection.up,
       hideOnEmpty: true,

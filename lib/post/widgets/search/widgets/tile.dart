@@ -2,6 +2,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PostTile extends StatelessWidget {
   final Post post;
@@ -67,7 +68,7 @@ class PostTile extends StatelessWidget {
       child: Stack(
         children: [
           ValueListenableBuilder<bool>(
-            valueListenable: settings.showPostInfo,
+            valueListenable: Provider.of<Settings>(context).showPostInfo,
             builder: (context, value, child) => Column(
               children: [
                 Expanded(

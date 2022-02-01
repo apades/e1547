@@ -10,7 +10,7 @@ Future<void> postDownloadingNotification(
     context: context,
     icon: Icon(Icons.download),
     timeout: Duration(milliseconds: 100),
-    process: (Post item) => item.download(),
+    process: (Post item) => item.download(context),
     items: items,
     onDone: (items) => items.length == 1
         ? 'Downloaded post #${items.first.id}'

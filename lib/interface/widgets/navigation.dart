@@ -9,12 +9,7 @@ import 'package:e1547/settings/settings.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
-
-final NavigationController navigationController =
-    NavigationController(destinations: destinations);
-
-NavigationDrawer defaultNavigationDrawer() =>
-    NavigationDrawer(controller: navigationController);
+import 'package:provider/provider.dart';
 
 double defaultDrawerEdge(double screenWidth) => screenWidth * 0.1;
 
@@ -78,7 +73,7 @@ enum DrawerGroup {
   settings,
 }
 
-List<NavigationDestination<DrawerSelection>> destinations = [
+final List<NavigationDestination<DrawerSelection>> topLevelDestinations = [
   NavigationDestination(
     path: '/',
     name: 'Home',
@@ -167,18 +162,17 @@ List<NavigationDestination<DrawerSelection>> destinations = [
 ];
 
 class NavigationDrawer<UniqueRoute extends Enum> extends StatelessWidget {
-  final NavigationController<UniqueRoute> controller;
-
-  const NavigationDrawer({required this.controller});
-
   @override
   Widget build(BuildContext context) {
+    NavigationController controller =
+        Provider.of<NavigationController>(context);
+
     List<Widget> children = [];
     children.add(ProfileHeader());
 
     String? currentGroup = controller.destinations.first.group;
 
-    for (var destination in controller.destinations) {
+    for (final destination in controller.destinations) {
       if (destination.name == null) {
         break;
       }
@@ -217,17 +211,7 @@ class ProfileHeader extends StatefulWidget {
   }
 }
 
-class _ProfileHeaderState extends State<ProfileHeader>
-    with ListenerCallbackMixin {
-  @override
-  Map<ChangeNotifier, VoidCallback> get initListeners => {
-        settings.credentials: () {
-          if (mounted) {
-            initAvatar(context);
-          }
-        },
-      };
-
+class _ProfileHeaderState extends State<ProfileHeader> {
   @override
   Widget build(BuildContext context) {
     Widget userNameWidget(String? name) {
@@ -256,7 +240,7 @@ class _ProfileHeaderState extends State<ProfileHeader>
     }
 
     return ValueListenableBuilder<Credentials?>(
-      valueListenable: settings.credentials,
+      valueListenable: Provider.of<Settings>(context).credentials,
       builder: (context, value, child) => DrawerHeader(
         child: GestureDetector(
           child: Row(
@@ -294,7 +278,7 @@ class DrawerUpdateIcon extends StatefulWidget {
 }
 
 class _DrawerUpdateIconState extends State<DrawerUpdateIcon> {
-  Future<List<AppVersion>?> newVersions = getNewVersions();
+  late Future<List<AppVersion>?> newVersions = getNewVersions(context);
 
   @override
   Widget build(BuildContext context) {

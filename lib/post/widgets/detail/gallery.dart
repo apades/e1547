@@ -64,7 +64,7 @@ class _PostDetailGalleryState extends State<PostDetailGallery> {
           if (widget.controller.itemList!.isNotEmpty) {
             Post lastPost = widget.controller.itemList![lastIndex];
             if (lastPost.isEditing) {
-              lastPost.resetPost();
+              lastPost.resetPost(context);
             }
           }
           lastIndex = index;

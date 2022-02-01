@@ -6,6 +6,7 @@ import 'package:e1547/settings/settings.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart';
 
 class CommentTile extends StatelessWidget {
@@ -19,6 +20,8 @@ class CommentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Client client = Provider.of<Client>(context);
+
     final Color dark =
         Theme.of(context).textTheme.bodyText1!.color!.withOpacity(0.35);
     final double iconSize = 18;
@@ -169,7 +172,7 @@ class CommentTile extends StatelessWidget {
                     ),
                     onSelected: (value) => value(),
                     itemBuilder: (context) => [
-                      if (settings.credentials.value?.username ==
+                      if (client.settings.credentials.value?.username ==
                           comment.creatorName)
                         PopupMenuTile(
                           title: 'Edit',

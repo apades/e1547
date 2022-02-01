@@ -3,6 +3,7 @@ import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DrawerDenySwitch extends StatelessWidget {
   final PostController controller;
@@ -199,7 +200,7 @@ class DrawerDenySwitchBody extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ValueListenableBuilder<List<String>>(
-                valueListenable: settings.denylist,
+                valueListenable: Provider.of<Settings>(context).denylist,
                 builder: (context, value, child) {
                   int count = value.length;
                   if (denying) {

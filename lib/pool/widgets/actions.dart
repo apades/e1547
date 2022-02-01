@@ -3,6 +3,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PoolFollowButton extends StatefulWidget {
   final Pool pool;
@@ -20,6 +21,7 @@ class PoolFollowButtonState extends State<PoolFollowButton> {
 
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
     return ValueListenableBuilder<List<Follow>>(
       valueListenable: settings.follows,
       builder: (context, value, child) {

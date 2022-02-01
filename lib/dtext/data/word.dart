@@ -3,6 +3,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum LinkWord {
   post,
@@ -39,6 +40,7 @@ Map<RegExp, DTextParser> linkWordRegexes(BuildContext context) {
 }
 
 VoidCallback? getLinkWordTap(BuildContext context, LinkWord word, int id) {
+  Settings settings = Provider.of<Settings>(context);
   switch (word) {
     case LinkWord.thumb:
     // replace thumb with picture widget some day

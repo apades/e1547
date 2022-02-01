@@ -4,9 +4,11 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 Future<void> initAvatar(BuildContext context) async {
-  Post? avatar = await client.currentAvatar;
+  Post? avatar =
+      await Provider.of<Client>(context, listen: false).currentAvatar;
   if (avatar?.sample.url != null) {
     precacheImage(
       CachedNetworkImageProvider(avatar!.sample.url!),
@@ -24,21 +26,24 @@ class CurrentUserAvatar extends StatefulWidget {
 
 class _CurrentUserAvatarState extends State<CurrentUserAvatar>
     with ListenerCallbackMixin {
-  Future<Post?> avatar = client.currentAvatar;
-
-  void updateAvatar() {
-    if (mounted) {
-      setState(() {
-        avatar = client.currentAvatar;
-      });
-    }
-  }
+  Settings? settings;
+  late Client client;
+  late Future<Post?> avatar;
 
   @override
-  Map<ChangeNotifier, VoidCallback> get listeners => {
-        settings.credentials: updateAvatar,
-        settings.host: updateAvatar,
-      };
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client>(context);
+    settings?.credentials.removeListener(updateAvatar);
+    settings?.host.removeListener(updateAvatar);
+    settings = Provider.of<Settings>(context);
+    settings?.credentials.addListener(updateAvatar);
+    settings?.host.addListener(updateAvatar);
+  }
+
+  void updateAvatar() {
+    avatar = client.currentAvatar;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +61,15 @@ class UserAvatar extends StatefulWidget {
 }
 
 class _UserAvatarState extends State<UserAvatar> with ListenerCallbackMixin {
-  late Future<Post?> avatar = getAvatar();
+  late Future<Post?> avatar;
 
-  Future<Post?> getAvatar() async => await client.post(widget.id);
+  Future<Post?> getAvatar(Client client) async => await client.post(widget.id);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    avatar = getAvatar(Provider.of<Client>(context));
+  }
 
   @override
   Widget build(BuildContext context) {

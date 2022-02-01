@@ -5,6 +5,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
@@ -232,11 +233,13 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     IconButton(
                       onPressed: () {
+                        Client client =
+                            Provider.of<Client>(context, listen: false);
                         if (usernameController.text.isNotEmpty) {
                           launch(
-                              'https://${settings.host.value}/users/${usernameController.text}/api_key');
+                              'https://${client.host}/users/${usernameController.text}/api_key');
                         } else {
-                          launch('https://${settings.host.value}/session/new');
+                          launch('https://${client.host}/session/new');
                         }
                       },
                       icon: Icon(Icons.launch),
@@ -282,6 +285,7 @@ class _LoginProgressDialogState extends State<LoginProgressDialog> {
   @override
   void initState() {
     super.initState();
+    Client client = Provider.of<Client>(context, listen: false);
     client.saveLogin(widget.username!, widget.apiKey!).then((value) async {
       await Navigator.of(context).maybePop();
       if (value) {
@@ -317,7 +321,8 @@ class _LoginProgressDialogState extends State<LoginProgressDialog> {
 }
 
 Future<void> logout(BuildContext context) async {
-  String? name = settings.credentials.value?.username;
+  Client client = Provider.of<Client>(context, listen: false);
+  String? name = client.credentials?.username;
   await client.logout();
 
   String msg = 'Forgot login details';
@@ -335,6 +340,7 @@ Future<void> guardWithLogin(
     {required BuildContext context,
     required VoidCallback callback,
     String? error}) async {
+  Client client = Provider.of<Client>(context, listen: false);
   if (client.hasLogin) {
     callback();
   } else {

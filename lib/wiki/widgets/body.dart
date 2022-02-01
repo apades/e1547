@@ -6,6 +6,7 @@ import 'package:e1547/tag/tag.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'actions.dart';
 
@@ -29,7 +30,6 @@ class _WikiBodyState extends State<WikiBody> {
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 8),
           child: ExpandableNotifier(
-            // initialExpanded: false,
             child: ExpandableTheme(
               data: ExpandableThemeData(
                 headerAlignment: ExpandablePanelHeaderAlignment.center,
@@ -85,13 +85,20 @@ class WikiTagDisplay extends StatefulWidget {
 }
 
 class _WikiTagDisplayState extends State<WikiTagDisplay> {
-  late Future<Wiki?> wiki = retrieveWiki();
+  late Future<Wiki?> wiki;
 
-  Future<Wiki?> retrieveWiki() async {
+  Future<Wiki?> retrieveWiki(Client client) async {
     List<Wiki> results = await client.wikis(1, search: tagToName(widget.tag));
     if (results.isNotEmpty) {
       return results.first;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Client client = Provider.of<Client>(context);
+    wiki = retrieveWiki(client);
   }
 
   @override

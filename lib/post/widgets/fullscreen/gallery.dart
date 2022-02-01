@@ -3,6 +3,7 @@ import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/data/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class PostFullscreenGallery extends StatefulWidget {
   final int initialPage;
@@ -21,6 +22,7 @@ class PostFullscreenGallery extends StatefulWidget {
 
 class _PostFullscreenGalleryState extends State<PostFullscreenGallery>
     with RouteAware {
+  late NavigationController navigationController;
   late PageController pageController =
       PageController(initialPage: widget.initialPage);
   late ValueNotifier<int> current = ValueNotifier(widget.initialPage);
@@ -35,9 +37,12 @@ class _PostFullscreenGalleryState extends State<PostFullscreenGallery>
   }
 
   @override
-  void initState() {
-    super.initState();
-    if (settings.hideSystemUI.value) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    navigationController = Provider.of<NavigationController>(context);
+    navigationController.routeObserver
+        .subscribe(this, ModalRoute.of(context) as PageRoute);
+    if (Provider.of<Settings>(context).hideSystemUI.value) {
       toggleFrame(false);
       frameController = FrameController(onToggle: toggleFrame);
       SystemChrome.setSystemUIChangeCallback((hidden) async {
@@ -49,17 +54,10 @@ class _PostFullscreenGalleryState extends State<PostFullscreenGallery>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    navigationController.routeObserver
-        .subscribe(this, ModalRoute.of(context) as PageRoute);
-  }
-
-  @override
   void dispose() {
+    SystemChrome.setSystemUIChangeCallback(null);
     navigationController.routeObserver.unsubscribe(this);
     frameController.dispose();
-    SystemChrome.setSystemUIChangeCallback(null);
     super.dispose();
   }
 

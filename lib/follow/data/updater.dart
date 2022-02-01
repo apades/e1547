@@ -6,17 +6,18 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/data/settings.dart';
 import 'package:flutter/material.dart';
 
-late final FollowUpdater followUpdater = FollowUpdater(settings.follows);
-
 class FollowUpdater extends DataUpdater<List<Follow>>
     with HostableUpdater, EditableUpdater {
+  final Settings settings;
+  final Client client;
+
   @override
   Duration get stale => getFollowRefreshRate(source.value.length);
 
   @override
   ValueNotifier<List<Follow>> source;
 
-  FollowUpdater(this.source);
+  FollowUpdater(this.settings, this.client) : source = settings.follows;
 
   @override
   Future<List<Follow>> read() async => source.value;
@@ -29,7 +30,7 @@ class FollowUpdater extends DataUpdater<List<Follow>>
   }
 
   Future<void> sort(List<Follow> data) async {
-    data.sortByNew();
+    data.sortByNew(client.host);
     await write(List.from(data));
   }
 
@@ -44,9 +45,9 @@ class FollowUpdater extends DataUpdater<List<Follow>>
 
     for (Follow follow in data) {
       if (follow.type != FollowType.bookmark) {
-        DateTime? updated = follow.updated;
+        DateTime? updated = follow.statuses[client.host]?.updated;
         if (force || updated == null || now.difference(updated) > stale) {
-          if (await follow.refresh()) {
+          if (await follow.refresh(client)) {
             await write(data);
             await Future.delayed(Duration(milliseconds: 500));
           } else {
@@ -55,11 +56,6 @@ class FollowUpdater extends DataUpdater<List<Follow>>
         }
       }
       if (!step()) {
-        if (client.isSafe) {
-          follow.safe = FollowStatus();
-        } else {
-          follow.unsafe = FollowStatus();
-        }
         return null;
       }
     }

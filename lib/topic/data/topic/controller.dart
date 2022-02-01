@@ -8,7 +8,9 @@ class TopicController extends DataController<Topic>
   @override
   late ValueNotifier<String> search;
 
-  TopicController({String? search})
+  final Client client;
+
+  TopicController({String? search, required this.client})
       : search = ValueNotifier<String>(search ?? '');
 
   @override

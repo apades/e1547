@@ -1,6 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
+import 'package:e1547/settings/data/settings.dart';
 import 'package:flutter/material.dart';
 
 class PoolController extends DataController<Pool>
@@ -8,7 +9,10 @@ class PoolController extends DataController<Pool>
   @override
   late ValueNotifier<String> search;
 
-  PoolController({String? search})
+  final Settings settings;
+  final Client client;
+
+  PoolController({String? search, required this.client, required this.settings})
       : search = ValueNotifier<String>(search ?? '');
 
   @override

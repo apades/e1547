@@ -1,7 +1,9 @@
+import 'package:e1547/client/client.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:provider/provider.dart';
 
 class RepliesPage extends StatefulWidget {
   final Topic topic;
@@ -14,61 +16,74 @@ class RepliesPage extends StatefulWidget {
 }
 
 class _RepliesPageState extends State<RepliesPage> {
-  late ReplyController controller = ReplyController(
-      topicId: widget.topic.id, orderByOldest: widget.orderByOldest);
+  ReplyController? controller;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    controller?.dispose();
+    controller = ReplyController(
+      topicId: widget.topic.id,
+      orderByOldest: widget.orderByOldest,
+      client: Provider.of<Client>(context),
+    );
+  }
 
   @override
   void dispose() {
-    controller.dispose();
+    controller!.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshableControllerPage(
-      appBar: DefaultAppBar(
-        leading: BackButton(),
-        title: Text(widget.topic.title),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.info_outline),
-            tooltip: 'Info',
-            onPressed: () => topicSheet(context, widget.topic),
-          ),
-          ContextDrawerButton(),
-        ],
-      ),
-      controller: controller,
-      builder: (context) => PagedListView(
-        padding: defaultActionListPadding,
-        pagingController: controller,
-        builderDelegate: defaultPagedChildBuilderDelegate(
-          pagingController: controller,
-          itemBuilder: (context, Reply item, index) =>
-              ReplyTile(reply: item, topic: widget.topic),
-          onLoading: Text('Loading replies'),
-          onEmpty: Text('No replies'),
-          onError: Text('Failed to load replies'),
-        ),
-      ),
-      drawer: defaultNavigationDrawer(),
-      endDrawer: ContextDrawer(
-        title: Text('Replies'),
-        children: [
-          ValueListenableBuilder<bool>(
-            valueListenable: controller.orderByOldest,
-            builder: (context, value, child) => SwitchListTile(
-              secondary: Icon(Icons.sort),
-              title: Text('Reply order'),
-              subtitle: Text(value ? 'oldest first' : 'newest first'),
-              value: value,
-              onChanged: (value) {
-                controller.orderByOldest.value = value;
-                Navigator.of(context).maybePop();
-              },
+    return Provider.value(
+      value: controller,
+      child: RefreshableControllerPage(
+        appBar: DefaultAppBar(
+          leading: BackButton(),
+          title: Text(widget.topic.title),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.info_outline),
+              tooltip: 'Info',
+              onPressed: () => topicSheet(context, widget.topic),
             ),
+            ContextDrawerButton(),
+          ],
+        ),
+        controller: controller!,
+        builder: (context) => PagedListView(
+          padding: defaultActionListPadding,
+          pagingController: controller!,
+          builderDelegate: defaultPagedChildBuilderDelegate(
+            pagingController: controller,
+            itemBuilder: (context, Reply item, index) =>
+                ReplyTile(reply: item, topic: widget.topic),
+            onLoading: Text('Loading replies'),
+            onEmpty: Text('No replies'),
+            onError: Text('Failed to load replies'),
           ),
-        ],
+        ),
+        drawer: NavigationDrawer(),
+        endDrawer: ContextDrawer(
+          title: Text('Replies'),
+          children: [
+            ValueListenableBuilder<bool>(
+              valueListenable: controller!.orderByOldest,
+              builder: (context, value, child) => SwitchListTile(
+                secondary: Icon(Icons.sort),
+                title: Text('Reply order'),
+                subtitle: Text(value ? 'oldest first' : 'newest first'),
+                value: value,
+                onChanged: (value) {
+                  controller!.orderByOldest.value = value;
+                  Navigator.of(context).maybePop();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

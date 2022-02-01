@@ -3,6 +3,7 @@ import 'package:e1547/history/history.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'appbar.dart';
 
@@ -21,7 +22,8 @@ class PostDetail extends StatefulWidget {
 
 class _PostDetailState extends State<PostDetail>
     with ListenerCallbackMixin, RouteAware {
-  SheetActionController sheetController = SheetActionController();
+  final SheetActionController sheetController = SheetActionController();
+  late NavigationController navigationController;
   bool keepPlaying = false;
 
   late NavigatorState navigator;
@@ -52,12 +54,13 @@ class _PostDetailState extends State<PostDetail>
   @override
   void initState() {
     super.initState();
-    addPostToHistory(widget.post);
+    addPostToHistory(context, widget.post);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    navigationController = Provider.of<NavigationController>(context);
     navigationController.routeObserver
         .subscribe(this, ModalRoute.of(context) as PageRoute);
     navigator = Navigator.of(context);
@@ -79,7 +82,7 @@ class _PostDetailState extends State<PostDetail>
   void dispose() {
     navigationController.routeObserver.unsubscribe(this);
     if (widget.post.isEditing) {
-      widget.post.resetPost();
+      widget.post.resetPost(context);
     }
     widget.post.controller?.pause();
     if (widget.controller == null) {
@@ -98,59 +101,61 @@ class _PostDetailState extends State<PostDetail>
     }
   }
 
-  Future<void> editPost(BuildContext context, String reason) async {
-    widget.post.isEditing = false;
-    try {
-      await client.updatePost(widget.post, Post.fromMap(widget.post.raw),
-          editReason: reason);
-      await widget.post.resetPost(online: true);
-    } on DioError {
-      widget.post.isEditing = true;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          duration: Duration(seconds: 1),
-          content: Text('failed to edit Post #${widget.post.id}'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      throw ControllerException(
-          message: 'failed to edit Post #${widget.post.id}');
-    }
-  }
-
-  Future<void> submitEdit(BuildContext context) async {
-    sheetController.show(
-      context,
-      ControlledTextField(
-        labelText: 'Reason',
-        submit: (value) => editPost(context, value),
-        actionController: sheetController,
-      ),
-    );
-  }
-
-  Widget fab(BuildContext context) {
-    return AnimatedBuilder(
-      animation: sheetController,
-      builder: (context, child) => FloatingActionButton(
-        heroTag: null,
-        backgroundColor: Theme.of(context).cardColor,
-        foregroundColor: Theme.of(context).iconTheme.color,
-        onPressed: widget.post.isEditing
-            ? sheetController.action ?? () => submitEdit(context)
-            : () {},
-        child: widget.post.isEditing
-            ? Icon(sheetController.isShown ? Icons.add : Icons.check)
-            : Padding(
-                padding: EdgeInsets.only(left: 2),
-                child: FavoriteButton(post: widget.post),
-              ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    Client client = Provider.of<Client>(context);
+
+    Future<void> editPost(BuildContext context, String reason) async {
+      widget.post.isEditing = false;
+      try {
+        await client.updatePost(widget.post, Post.fromMap(widget.post.raw),
+            editReason: reason);
+        await widget.post.resetPost(context, online: true);
+      } on ClientException {
+        widget.post.isEditing = true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 1),
+            content: Text('failed to edit Post #${widget.post.id}'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        throw ControllerException(
+            message: 'failed to edit Post #${widget.post.id}');
+      }
+    }
+
+    Future<void> submitEdit(BuildContext context) async {
+      sheetController.show(
+        context,
+        ControlledTextField(
+          labelText: 'Reason',
+          submit: (value) => editPost(context, value),
+          actionController: sheetController,
+        ),
+      );
+    }
+
+    Widget fab(BuildContext context) {
+      return AnimatedBuilder(
+        animation: sheetController,
+        builder: (context, child) => FloatingActionButton(
+          heroTag: null,
+          backgroundColor: Theme.of(context).cardColor,
+          foregroundColor: Theme.of(context).iconTheme.color,
+          onPressed: widget.post.isEditing
+              ? sheetController.action ?? () => submitEdit(context)
+              : () {},
+          child: widget.post.isEditing
+              ? Icon(sheetController.isShown ? Icons.add : Icons.check)
+              : Padding(
+                  padding: EdgeInsets.only(left: 2),
+                  child: FavoriteButton(post: widget.post),
+                ),
+        ),
+      );
+    }
+
     Widget fullscreen() {
       if (widget.post.isEditing || widget.controller == null) {
         return PostFullscreenFrame(
@@ -176,7 +181,7 @@ class _PostDetailState extends State<PostDetail>
             return true;
           }
           if (widget.post.isEditing) {
-            widget.post.resetPost();
+            widget.post.resetPost(context);
             return false;
           }
           return true;

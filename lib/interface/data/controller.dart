@@ -203,6 +203,8 @@ mixin SearchableController<PageKeyType, ItemType>
 
 mixin HostableController<PageKeyType, ItemType>
     on RawDataController<PageKeyType, ItemType> {
+  Settings get settings;
+
   @override
   List<Listenable> getRefreshListeners() =>
       super.getRefreshListeners()..add(settings.host);
@@ -210,6 +212,8 @@ mixin HostableController<PageKeyType, ItemType>
 
 mixin AccountableController<PageKeyType, ItemType>
     on RawDataController<PageKeyType, ItemType> {
+  Settings get settings;
+
   @override
   List<Listenable> getRefreshListeners() =>
       super.getRefreshListeners()..add(settings.credentials);

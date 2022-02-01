@@ -1,9 +1,9 @@
-import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class FollowsSplitPage extends StatefulWidget {
@@ -11,14 +11,9 @@ class FollowsSplitPage extends StatefulWidget {
   _FollowsSplitPageState createState() => _FollowsSplitPageState();
 }
 
-class _FollowsSplitPageState extends State<FollowsSplitPage>
-    with ListenerCallbackMixin {
-  late RefreshController refreshController;
-
-  @override
-  Map<ChangeNotifier, VoidCallback> get listeners => {
-        followUpdater: updateRefresh,
-      };
+class _FollowsSplitPageState extends State<FollowsSplitPage> {
+  late RefreshController refreshController = RefreshController();
+  late FollowUpdater followUpdater;
 
   Future<void> refreshFollows({bool force = false}) async {
     await followUpdater.update(force: force);
@@ -56,19 +51,16 @@ class _FollowsSplitPageState extends State<FollowsSplitPage>
   }
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
     Future.delayed(Duration(milliseconds: 500), refreshFollows);
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    refreshController = RefreshController();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+    FollowUpdater followUpdater = Provider.of<FollowUpdater>(context);
     return TileLayoutScope(
       tileBuilder: (tileHeightFactor, crossAxisCount, stagger) =>
           (index) => StaggeredTile.count(1, 1 * tileHeightFactor),
@@ -102,7 +94,7 @@ class _FollowsSplitPageState extends State<FollowsSplitPage>
                 crossAxisCount: crossAxisCount,
                 itemCount: follows.length,
                 itemBuilder: (context, index) =>
-                    FollowTile(follow: follows[index], safe: client.isSafe),
+                    FollowTile(follow: follows[index], host: host),
                 staggeredTileBuilder: tileBuilder,
               ),
               appBar: DefaultAppBar(
@@ -118,7 +110,7 @@ class _FollowsSplitPageState extends State<FollowsSplitPage>
                   refreshController.refreshFailed();
                 }
               },
-              drawer: defaultNavigationDrawer(),
+              drawer: NavigationDrawer(),
               endDrawer: ContextDrawer(
                 title: Text('Follows'),
                 children: [

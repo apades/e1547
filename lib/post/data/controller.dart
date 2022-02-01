@@ -22,8 +22,13 @@ class PostController extends DataController<Post>
   bool canSearch;
   bool canDeny;
 
+  final Settings settings;
+  final Client client;
+
   PostController({
     this.provider,
+    required this.settings,
+    required this.client,
     String? search,
     bool denying = true,
     this.canSearch = true,

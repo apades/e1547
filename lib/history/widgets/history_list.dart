@@ -5,6 +5,7 @@ import 'package:e1547/post/data/actions.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -17,6 +18,7 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
     return AnimatedBuilder(
       animation: Listenable.merge([
         settings.history,
@@ -106,13 +108,14 @@ class _HistoryPageState extends State<HistoryPage> {
                           itemBuilder: (context) => [
                             PopupMenuTile(
                               value: () async => Share.share(
-                                  getPostUri(element.postId).toString()),
+                                  getPostUri(context, element.postId)
+                                      .toString()),
                               title: 'Share',
                               icon: Icons.share,
                             ),
                             PopupMenuTile(
                               value: () {
-                                removeFromHistory(element);
+                                removeFromHistory(context, element);
                               },
                               title: 'Delete',
                               icon: Icons.delete,

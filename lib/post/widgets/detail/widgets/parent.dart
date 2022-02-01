@@ -3,6 +3,7 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class ParentDisplay extends StatefulWidget {
   final Post post;
@@ -17,116 +18,122 @@ class ParentDisplay extends StatefulWidget {
 class _ParentDisplayState extends State<ParentDisplay> {
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      AnimatedSelector(
-        animation: widget.post,
-        selector: () => [
-          widget.post.relationships.parentId,
-          widget.post.isEditing,
-        ],
-        builder: (context, child) {
-          return CrossFade(
-            showChild: widget.post.relationships.parentId != null ||
-                widget.post.isEditing,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  child: Text(
-                    'Parent',
-                    style: TextStyle(
-                      fontSize: 16,
+    Client client = Provider.of<Client>(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedSelector(
+          animation: widget.post,
+          selector: () => [
+            widget.post.relationships.parentId,
+            widget.post.isEditing,
+          ],
+          builder: (context, child) {
+            return CrossFade(
+              showChild: widget.post.relationships.parentId != null ||
+                  widget.post.isEditing,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Text(
+                      'Parent',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-                LoadingTile(
-                  leading: Icon(Icons.supervisor_account),
-                  title: Text(
-                      widget.post.relationships.parentId?.toString() ?? 'none'),
-                  trailing: widget.post.isEditing
-                      ? Builder(
-                          builder: (context) => IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () {
-                              widget.controller.show(
-                                context,
-                                ParentEditor(
-                                  post: widget.post,
-                                  controller: widget.controller,
-                                ),
-                              );
-                            },
-                          ),
-                        )
-                      : null,
-                  onTap: () async {
-                    if (widget.post.relationships.parentId != null) {
-                      try {
-                        Post post = await client
-                            .post(widget.post.relationships.parentId!);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => PostDetail(post: post),
-                          ),
-                        );
-                      } on DioError {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          duration: Duration(seconds: 1),
-                          content: Text(
-                              'Coulnd\'t retrieve Post #${widget.post.relationships.parentId}'),
-                        ));
+                  LoadingTile(
+                    leading: Icon(Icons.supervisor_account),
+                    title: Text(
+                        widget.post.relationships.parentId?.toString() ??
+                            'none'),
+                    trailing: widget.post.isEditing
+                        ? Builder(
+                            builder: (context) => IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                widget.controller.show(
+                                  context,
+                                  ParentEditor(
+                                    post: widget.post,
+                                    controller: widget.controller,
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        : null,
+                    onTap: () async {
+                      if (widget.post.relationships.parentId != null) {
+                        try {
+                          Post post = await client
+                              .post(widget.post.relationships.parentId!);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => PostDetail(post: post),
+                            ),
+                          );
+                        } on ClientException {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            duration: Duration(seconds: 1),
+                            content: Text(
+                                'Coulnd\'t retrieve Post #${widget.post.relationships.parentId}'),
+                          ));
+                        }
                       }
-                    }
-                  },
+                    },
+                  ),
+                  Divider(),
+                ],
+              ),
+            );
+          },
+        ),
+        CrossFade(
+          showChild: widget.post.relationships.children.isNotEmpty &&
+              !widget.post.isEditing,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(
+              padding: EdgeInsets.only(
+                right: 4,
+                left: 4,
+                top: 2,
+                bottom: 2,
+              ),
+              child: Text(
+                'Children',
+                style: TextStyle(
+                  fontSize: 16,
                 ),
-                Divider(),
-              ],
-            ),
-          );
-        },
-      ),
-      CrossFade(
-        showChild: widget.post.relationships.children.isNotEmpty &&
-            !widget.post.isEditing,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Padding(
-            padding: EdgeInsets.only(
-              right: 4,
-              left: 4,
-              top: 2,
-              bottom: 2,
-            ),
-            child: Text(
-              'Children',
-              style: TextStyle(
-                fontSize: 16,
               ),
             ),
-          ),
-          ...widget.post.relationships.children.map(
-            (child) => LoadingTile(
-              leading: Icon(Icons.supervised_user_circle),
-              title: Text(child.toString()),
-              onTap: () async {
-                try {
-                  Post post = await client.post(child);
-                  await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PostDetail(post: post)));
-                } on DioError {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    duration: Duration(seconds: 1),
-                    content:
-                        Text('Coulnd\'t retrieve Post #${child.toString()}'),
-                  ));
-                }
-              },
+            ...widget.post.relationships.children.map(
+              (child) => LoadingTile(
+                leading: Icon(Icons.supervised_user_circle),
+                title: Text(child.toString()),
+                onTap: () async {
+                  try {
+                    Post post = await client.post(child);
+                    await Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => PostDetail(post: post)));
+                  } on ClientException {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      duration: Duration(seconds: 1),
+                      content:
+                          Text('Coulnd\'t retrieve Post #${child.toString()}'),
+                    ));
+                  }
+                },
+              ),
             ),
-          ),
-          Divider(),
-        ]),
-      ),
-    ]);
+            Divider(),
+          ]),
+        ),
+      ],
+    );
   }
 }
 
@@ -170,10 +177,11 @@ class _ParentEditorState extends State<ParentEditor> {
       return;
     }
     try {
-      Post parent = await client.post(int.parse(textController.text));
+      Post parent = await Provider.of<Client>(context, listen: false)
+          .post(int.parse(textController.text));
       widget.post.relationships.parentId = parent.id;
       widget.post.notifyListeners();
-    } on DioError {
+    } on ClientException {
       showError('Invalid parent post');
     } on FormatException {
       showError('Invalid input');

@@ -8,11 +8,11 @@ import 'package:e1547/settings/settings.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart'
-    show DefaultCacheManager;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:media_scanner/media_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 import 'post.dart';
 
@@ -134,13 +134,14 @@ extension Denying on Post {
 }
 
 extension Downloading on Post {
-  Future<bool> download() async {
+  Future<bool> download(BuildContext context) async {
     try {
       if (!await Permission.storage.request().isGranted) {
         return false;
       }
       File download = await DefaultCacheManager().getSingleFile(file.url!);
       if (Platform.isAndroid) {
+        AppInfo appInfo = Provider.of<AppInfo>(context);
         String directory =
             '${Platform.environment['EXTERNAL_STORAGE']}/Pictures';
         directory = [directory, appInfo.appName].join('/');
@@ -173,6 +174,7 @@ extension Downloading on Post {
 
 extension Favoriting on Post {
   Future<bool> tryRemoveFav(BuildContext context) async {
+    Client client = Provider.of<Client>(context);
     if (await client.removeFavorite(id)) {
       isFavorited = false;
       favCount -= 1;
@@ -193,6 +195,8 @@ extension Favoriting on Post {
   }
 
   Future<bool> tryAddFav(BuildContext context, {Duration? cooldown}) async {
+    Client client = Provider.of<Client>(context);
+    Settings settings = Provider.of<Settings>(context);
     cooldown ??= Duration(milliseconds: 0);
     if (await client.addFavorite(id)) {
       // cooldown avoids interference with animation
@@ -222,10 +226,12 @@ extension Favoriting on Post {
 }
 
 extension Voting on Post {
-  Future<void> tryVote(
-      {required BuildContext context,
-      required bool upvote,
-      required bool replace}) async {
+  Future<void> tryVote({
+    required BuildContext context,
+    required bool upvote,
+    required bool replace,
+  }) async {
+    Client client = Provider.of<Client>(context);
     if (await client.votePost(id, upvote, replace)) {
       if (voteStatus == VoteStatus.unknown) {
         if (upvote) {
@@ -273,7 +279,8 @@ extension Voting on Post {
 }
 
 extension Editing on Post {
-  Future<void> resetPost({bool online = false}) async {
+  Future<void> resetPost(BuildContext context, {bool online = false}) async {
+    Client client = Provider.of<Client>(context);
     Post reset;
     if (online) {
       reset = await client.post(id);
@@ -300,10 +307,12 @@ extension Transitioning on Post {
 }
 
 extension Linking on Post {
-  Uri get url => getPostUri(id);
+  Uri url(BuildContext context) => getPostUri(context, id);
 }
 
-Uri getPostUri(int postId) =>
-    Uri(scheme: 'https', host: settings.host.value, path: '/posts/$postId');
+Uri getPostUri(BuildContext context, int postId) => Uri(
+    scheme: 'https',
+    host: Provider.of<Settings>(context).host.value,
+    path: '/posts/$postId');
 
 String getPostHero(int? postId) => 'image_$postId';

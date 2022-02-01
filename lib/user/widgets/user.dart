@@ -8,7 +8,7 @@ import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum UserPageSection {
@@ -34,12 +34,14 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage>
     with TickerProviderStateMixin, ListenerCallbackMixin {
-  late PostController favoritePostController =
-      PostController(search: 'fav:${widget.user.name}', canSearch: false);
-  late PostController uploadPostController =
-      PostController(search: 'user:${widget.user.name}', canSearch: false);
-  RefreshController refreshController = RefreshController();
-  late TabController tabController;
+  Settings? settings;
+  late PostController favoritePostController;
+  late PostController uploadPostController;
+  late TabController tabController = TabController(
+    vsync: this,
+    length: 3,
+    initialIndex: UserPageSection.values.indexOf(widget.initialPage),
+  );
 
   late Post? avatar = widget.avatar;
   late Future<Post?> maybeAvatar;
@@ -49,35 +51,36 @@ class _UserPageState extends State<UserPage>
       return avatar;
     }
     if (widget.user.avatarId != null) {
-      avatar = await client.post(widget.user.avatarId!);
+      avatar = await Provider.of<Client>(context, listen: false)
+          .post(widget.user.avatarId!);
       return avatar;
     }
   }
 
-  @override
-  Map<ChangeNotifier, VoidCallback> get initListeners => {
-        settings.customHost: () => maybeAvatar = getAvatar(),
-      };
+  void updateAvatar() {
+    maybeAvatar = getAvatar();
+  }
 
   @override
-  void initState() {
-    super.initState();
-    int index = 0;
-    switch (widget.initialPage) {
-      case UserPageSection.Favorites:
-        index = 0;
-        break;
-      case UserPageSection.Uploads:
-        index = 1;
-        break;
-      case UserPageSection.Info:
-        index = 2;
-        break;
-    }
-    tabController = TabController(
-      vsync: this,
-      length: 3,
-      initialIndex: index,
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    settings = attach<Settings>(
+      current: settings,
+      builder: (value) => {value.customHost: updateAvatar},
+      init: true,
+    );
+    Client client = Provider.of<Client>(context);
+    favoritePostController = PostController(
+      search: 'fav:${widget.user.name}',
+      canSearch: false,
+      settings: settings!,
+      client: client,
+    );
+    uploadPostController = PostController(
+      search: 'user:${widget.user.name}',
+      canSearch: false,
+      settings: settings!,
+      client: client,
     );
   }
 
@@ -100,7 +103,7 @@ class _UserPageState extends State<UserPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: defaultNavigationDrawer(),
+      drawer: NavigationDrawer(),
       endDrawer: ContextDrawer(
         title: Text('Posts'),
         children: [
@@ -167,7 +170,7 @@ class _UserPageState extends State<UserPage>
                       title: 'Browse',
                       icon: Icons.open_in_browser,
                       value: () async => launch(
-                          widget.user.url(settings.host.value).toString()),
+                          widget.user.url(settings!.host.value).toString()),
                     ),
                     PopupMenuTile(
                       title: 'Report',

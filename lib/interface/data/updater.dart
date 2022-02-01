@@ -122,6 +122,8 @@ abstract class DataUpdater<T> extends ChangeNotifier {
 }
 
 mixin HostableUpdater<T> on DataUpdater<T> {
+  Settings get settings;
+
   @override
   List<ValueNotifier> getRefreshListeners() =>
       super.getRefreshListeners()..add(settings.host);
