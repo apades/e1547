@@ -40,6 +40,7 @@ mixin ListenerCallbackMixin<T extends StatefulWidget> on State<T> {
         current: current,
         create: Provider.of<T>,
         builder: builder,
+        init: true,
       );
 
   T listen<T>({

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/tag/tag.dart';
@@ -128,18 +129,21 @@ class Follow {
   factory Follow.fromMap(Map<String, dynamic> json) => Follow(
         tags: json['tags'],
         alias: json['alias'],
-        status: json['statuses']
-            ?.map((key, value) => MapEntry(key, FollowStatus.fromMap(value))),
+        status: json['statuses'] == null
+            ? null
+            : Map<String, FollowStatus>.from(json['statuses'].map(
+                (key, value) => MapEntry(key, FollowStatus.fromMap(value)))),
         type: json['type'] == null
             ? null
-            : FollowType.values.byName(json['type']),
+            : FollowType.values.firstWhereOrNull(
+                (element) => element.toString() == json['type']),
       );
 
   Map<String, dynamic> toMap() => {
         'tags': tags,
         'alias': alias,
-        'statuses':
-            statuses.map((key, value) => MapEntry(key, value.toString())),
+        'statuses': statuses.map(
+            (key, value) => MapEntry<String, dynamic>(key, value.toString())),
         'type': type.toString(),
       };
 

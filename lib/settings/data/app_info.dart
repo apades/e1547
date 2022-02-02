@@ -1,6 +1,6 @@
 import 'package:package_info_plus/package_info_plus.dart';
 
-Future<AppInfo> initializePackageInfo() async => AppInfo.fromPlatform(
+Future<AppInfo> initializeAppInfo() async => AppInfo.fromPlatform(
       developer: 'binaryfloof',
       github: 'clragon/e1547',
       discord: 'MRwKGqfmUz',

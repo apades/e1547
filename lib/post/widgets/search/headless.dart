@@ -2,23 +2,18 @@ import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:provider/provider.dart';
 
-class PostsPageHeadless extends StatefulWidget {
-  final PostController controller;
+class PostsPageHeadless extends StatelessWidget {
+  const PostsPageHeadless();
 
-  const PostsPageHeadless({required this.controller});
-
-  @override
-  _PostsPageHeadlessState createState() => _PostsPageHeadlessState();
-}
-
-class _PostsPageHeadlessState extends State<PostsPageHeadless> {
   @override
   Widget build(BuildContext context) {
+    PostController controller = Provider.of<PostController>(context);
     return TileLayoutScope(
       tileBuilder: defaultStaggerTileBuilder(
         (index) {
-          PostFile image = widget.controller.itemList![index].sample;
+          PostFile image = controller.itemList![index].sample;
           return Size(image.width.toDouble(), image.height.toDouble());
         },
       ),
@@ -30,9 +25,9 @@ class _PostsPageHeadlessState extends State<PostsPageHeadless> {
         showNoMoreItemsIndicatorAsGridChild: false,
         padding: defaultListPadding,
         addAutomaticKeepAlives: false,
-        pagingController: widget.controller,
+        pagingController: controller,
         builderDelegate: defaultPagedChildBuilderDelegate<Post>(
-          pagingController: widget.controller,
+          pagingController: controller,
           onEmpty: Text('No posts'),
           onLoading: Text('Loading posts'),
           onError: Text('Failed to load posts'),
@@ -42,7 +37,7 @@ class _PostsPageHeadlessState extends State<PostsPageHeadless> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => PostDetailGallery(
-                    controller: widget.controller,
+                    controller: controller,
                     initialPage: index,
                   ),
                 ),
@@ -54,7 +49,7 @@ class _PostsPageHeadlessState extends State<PostsPageHeadless> {
             SliverStaggeredGridDelegateWithFixedCrossAxisCount(
           staggeredTileBuilder: tileBuilder,
           crossAxisCount: crossAxisCount,
-          staggeredTileCount: widget.controller.itemList?.length,
+          staggeredTileCount: controller.itemList?.length,
         ),
       ),
     );

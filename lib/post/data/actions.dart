@@ -141,7 +141,7 @@ extension Downloading on Post {
       }
       File download = await DefaultCacheManager().getSingleFile(file.url!);
       if (Platform.isAndroid) {
-        AppInfo appInfo = Provider.of<AppInfo>(context);
+        AppInfo appInfo = Provider.of<AppInfo>(context, listen: false);
         String directory =
             '${Platform.environment['EXTERNAL_STORAGE']}/Pictures';
         directory = [directory, appInfo.appName].join('/');
@@ -174,7 +174,7 @@ extension Downloading on Post {
 
 extension Favoriting on Post {
   Future<bool> tryRemoveFav(BuildContext context) async {
-    Client client = Provider.of<Client>(context);
+    Client client = Provider.of<Client>(context, listen: false);
     if (await client.removeFavorite(id)) {
       isFavorited = false;
       favCount -= 1;
@@ -195,8 +195,8 @@ extension Favoriting on Post {
   }
 
   Future<bool> tryAddFav(BuildContext context, {Duration? cooldown}) async {
-    Client client = Provider.of<Client>(context);
-    Settings settings = Provider.of<Settings>(context);
+    Client client = Provider.of<Client>(context, listen: false);
+    Settings settings = Provider.of<Settings>(context, listen: false);
     cooldown ??= Duration(milliseconds: 0);
     if (await client.addFavorite(id)) {
       // cooldown avoids interference with animation
@@ -231,7 +231,7 @@ extension Voting on Post {
     required bool upvote,
     required bool replace,
   }) async {
-    Client client = Provider.of<Client>(context);
+    Client client = Provider.of<Client>(context, listen: false);
     if (await client.votePost(id, upvote, replace)) {
       if (voteStatus == VoteStatus.unknown) {
         if (upvote) {
@@ -280,7 +280,7 @@ extension Voting on Post {
 
 extension Editing on Post {
   Future<void> resetPost(BuildContext context, {bool online = false}) async {
-    Client client = Provider.of<Client>(context);
+    Client client = Provider.of<Client>(context, listen: false);
     Post reset;
     if (online) {
       reset = await client.post(id);
@@ -312,7 +312,7 @@ extension Linking on Post {
 
 Uri getPostUri(BuildContext context, int postId) => Uri(
     scheme: 'https',
-    host: Provider.of<Settings>(context).host.value,
+    host: Provider.of<Settings>(context, listen: false).host.value,
     path: '/posts/$postId');
 
 String getPostHero(int? postId) => 'image_$postId';

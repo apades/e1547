@@ -53,14 +53,13 @@ class _FollowsSplitPageState extends State<FollowsSplitPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
+    followUpdater = Provider.of<FollowUpdater>(context);
     Future.delayed(Duration(milliseconds: 500), refreshFollows);
   }
 
   @override
   Widget build(BuildContext context) {
     Settings settings = Provider.of<Settings>(context);
-    FollowUpdater followUpdater = Provider.of<FollowUpdater>(context);
     return TileLayoutScope(
       tileBuilder: (tileHeightFactor, crossAxisCount, stagger) =>
           (index) => StaggeredTile.count(1, 1 * tileHeightFactor),

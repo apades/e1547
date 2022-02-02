@@ -33,7 +33,7 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage>
-    with TickerProviderStateMixin, ListenerCallbackMixin {
+    with TickerProviderStateMixin, ListenerCallbackMixin, ProviderCreatorMixin {
   Settings? settings;
   late PostController favoritePostController;
   late PostController uploadPostController;
@@ -69,19 +69,6 @@ class _UserPageState extends State<UserPage>
       builder: (value) => {value.customHost: updateAvatar},
       init: true,
     );
-    Client client = Provider.of<Client>(context);
-    favoritePostController = PostController(
-      search: 'fav:${widget.user.name}',
-      canSearch: false,
-      settings: settings!,
-      client: client,
-    );
-    uploadPostController = PostController(
-      search: 'user:${widget.user.name}',
-      canSearch: false,
-      settings: settings!,
-      client: client,
-    );
   }
 
   @override
@@ -90,18 +77,34 @@ class _UserPageState extends State<UserPage>
     super.dispose();
   }
 
-  late Map<Widget, Widget> tabs = {
-    Tab(text: 'Favorites'): PostsPageHeadless(
-      controller: favoritePostController,
-    ),
-    Tab(text: 'Uploads'): PostsPageHeadless(
-      controller: uploadPostController,
-    ),
-    Tab(text: 'About'): UserInfo(user: widget.user),
-  };
-
   @override
   Widget build(BuildContext context) {
+    final Map<Widget, Widget> tabs = {
+      Tab(text: 'Favorites'): ProxyProvider2<Settings, Client, PostController>(
+        update: guard2(
+          create: (context, value, value2) => PostController(
+            search: 'fav:${widget.user.name}',
+            canSearch: false,
+            settings: value,
+            client: value2,
+          ),
+        ),
+        child: PostsPageHeadless(),
+      ),
+      Tab(text: 'Uploads'): ProxyProvider2<Settings, Client, PostController>(
+        update: guard2(
+          create: (context, value, value2) => PostController(
+            search: 'user:${widget.user.name}',
+            canSearch: false,
+            settings: value,
+            client: value2,
+          ),
+        ),
+        child: PostsPageHeadless(),
+      ),
+      Tab(text: 'About'): UserInfo(user: widget.user),
+    };
+
     return Scaffold(
       drawer: NavigationDrawer(),
       endDrawer: ContextDrawer(

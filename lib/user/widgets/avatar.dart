@@ -39,6 +39,7 @@ class _CurrentUserAvatarState extends State<CurrentUserAvatar>
     settings = Provider.of<Settings>(context);
     settings?.credentials.addListener(updateAvatar);
     settings?.host.addListener(updateAvatar);
+    updateAvatar();
   }
 
   void updateAvatar() {
