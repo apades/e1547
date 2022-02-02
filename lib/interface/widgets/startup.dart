@@ -1,10 +1,14 @@
+import 'package:e1547/follow/follow.dart';
+import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
 
 typedef StartupCallback = void Function(BuildContext context);
 
 final List<StartupCallback> actions = [
-  // (context) => Provider.of<FollowUpdater>(context).update(),
+  initAvatar,
+  (context) => Provider.of<FollowUpdater>(context).update(),
   (_) => initializeDateFormatting(),
 ];
 
@@ -19,8 +23,8 @@ class StartupActions extends StatefulWidget {
 
 class _StartupActionsState extends State<StartupActions> {
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     for (StartupCallback element in actions) {
       element(context);
     }
