@@ -29,7 +29,7 @@ class PostDetailVideo extends StatelessWidget {
     VideoPlayer player = post.getVideo(context)!;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => player.state.playing ? player.pause() : player.play(),
+      // onTap: () => player.state.playing ? player.pause() : player.play(),
       child: Stack(
         alignment: Alignment.center,
         fit: StackFit.passthrough,
@@ -178,12 +178,25 @@ class PostDetailImageActions extends StatelessWidget {
         return Stack(
           fit: StackFit.passthrough,
           children: [
-            InkWell(
-              hoverColor: Colors.transparent,
-              onTap: player != null
-                  ? () => player.state.playing ? player.pause() : player.play()
-                  : onTap,
-              child: child,
+            GestureDetector(
+              onLongPressStart: (detail) {
+                if (player == null) return;
+                player.setRate(3);
+              },
+              onLongPressEnd: (detail) {
+                if (player == null) return;
+                player.setRate(1);
+              },
+              child: InkWell(
+                hoverColor: Colors.transparent,
+                onDoubleTap: () {
+                  if (player == null) return;
+
+                  player.state.playing ? player.pause() : player.play();
+                },
+                onTap: player != null ? () => {} : onTap,
+                child: child,
+              ),
             ),
             Positioned(
               bottom: 0,

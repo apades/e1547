@@ -25,7 +25,9 @@ class VideoPlayer extends Player {
 }
 
 class VideoService extends ChangeNotifier {
-  VideoService({bool muteVideos = false}) : _muteVideos = muteVideos;
+  VideoService({bool muteVideos = false, double playSpeed = 1.0})
+    : _muteVideos = muteVideos,
+      _playSpeed = playSpeed;
 
   static void ensureInitialized() => MediaKit.ensureInitialized();
 
@@ -46,6 +48,15 @@ class VideoService extends ChangeNotifier {
     _videos.values.forEach((e) => e.setVolume(muteVideos ? 0 : 100));
     notifyListeners();
     _logger.fine('${_muteVideos ? 'Muted' : 'Unmuted'} all controllers');
+  }
+
+  double _playSpeed;
+  double get playSpeed => _playSpeed;
+  set playSpeed(double value) {
+    _playSpeed = value;
+    _videos.values.forEach((e) => e.setRate(value));
+    notifyListeners();
+    _logger.fine('Set playback speed to $playSpeed');
   }
 
   VideoPlayer getVideo(String key) {

@@ -20,6 +20,8 @@ class PostFullscreenFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    VideoService service = context.watch<VideoService>();
+
     ThemeData theme = Theme.of(context);
     return Theme(
       data: theme.copyWith(
@@ -49,6 +51,8 @@ class PostFullscreenFrame extends StatelessWidget {
                     : null,
                 body: GestureDetector(
                   behavior: HitTestBehavior.translucent,
+                  onLongPressStart: (details) => {service.playSpeed = 3.0},
+                  onLongPressEnd: (details) => {service.playSpeed = 1.0},
                   onTap: () {
                     ScaffoldFrameController controller = ScaffoldFrame.of(
                       context,
