@@ -51,8 +51,17 @@ class PostFullscreenFrame extends StatelessWidget {
                     : null,
                 body: GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onLongPressStart: (details) => {service.playSpeed = 3.0},
-                  onLongPressEnd: (details) => {service.playSpeed = 1.0},
+                  onLongPressStart: (details) {
+                    service.playSpeed = 3.0;
+                  },
+                  onLongPressEnd: (details) {
+                    service.playSpeed = 1.0;
+                  },
+                  onDoubleTap: () {
+                    if (player == null) return;
+
+                    player.state.playing ? player.pause() : player.play();
+                  },
                   onTap: () {
                     ScaffoldFrameController controller = ScaffoldFrame.of(
                       context,
