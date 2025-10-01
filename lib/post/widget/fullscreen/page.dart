@@ -88,3 +88,29 @@ class PostFullscreen extends StatelessWidget {
     );
   }
 }
+
+class HorizontalVideoFullscreen extends StatelessWidget {
+  const HorizontalVideoFullscreen({super.key, required this.post});
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    return PostFullscreenFrame(
+      post: post,
+      child: PostVideoRoute(
+        post: post,
+        stopOnDispose: false,
+        child: Center(
+          child: Hero(
+            tag: post.link,
+            child: VideoGestures(
+              player: post.getVideo(context)!,
+              child: PostVideoWidget(post: post),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

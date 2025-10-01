@@ -4,6 +4,7 @@ import 'package:e1547/client/client.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class PostDetail extends StatelessWidget {
   const PostDetail({super.key, required this.post, this.onTapImage});
@@ -24,7 +25,7 @@ class PostDetail extends StatelessWidget {
         duration: defaultAnimationDuration,
         child: PostDetailImageDisplay(
           post: post,
-          onTap: () {
+          onEnterVerticalFullscreen: () {
             PostVideoRoute.of(context).keepPlaying();
             if (!(context.read<PostEditingController>().editing) &&
                 onTapImage != null) {
@@ -36,6 +37,36 @@ class PostDetail extends StatelessWidget {
                 ),
               );
             }
+          },
+          onEnterHorizontalFullscreen: () {
+            void lockHorizontal() {
+              SystemChrome.setPreferredOrientations([
+                DeviceOrientation.landscapeLeft,
+                DeviceOrientation.landscapeRight,
+              ]);
+            }
+
+            void unlockHorizontal() {
+              SystemChrome.setPreferredOrientations([
+                DeviceOrientation.portraitUp,
+                DeviceOrientation.portraitDown,
+                DeviceOrientation.landscapeLeft,
+                DeviceOrientation.landscapeRight,
+              ]);
+            }
+
+            PostVideoRoute.of(context).keepPlaying();
+
+            lockHorizontal();
+            Navigator.of(context)
+                .push(
+                  MaterialPageRoute(
+                    builder: (context) => HorizontalVideoFullscreen(post: post),
+                  ),
+                )
+                .then((_) {
+                  unlockHorizontal();
+                });
           },
         ),
       ),
