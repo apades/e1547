@@ -311,6 +311,56 @@ class VideoGestures extends StatelessWidget {
   }
 }
 
+class VideoTabMovingGesture extends StatefulWidget {
+  const VideoTabMovingGesture({
+    super.key,
+    required this.child,
+    required this.player,
+  });
+
+  final Widget child;
+  final VideoPlayer player;
+
+  @override
+  State<VideoTabMovingGesture> createState() => _VideoTabMovingGesture();
+}
+
+class _VideoTabMovingGesture extends State<VideoTabMovingGesture> {
+  int? startTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: widget.child,
+      onPanStart: (details) {
+        ScaffoldFrameController controller = ScaffoldFrame.of(context);
+
+        startTime = widget.player.state.position.inMilliseconds;
+        controller.showFrame();
+      },
+      onPanUpdate: (details) {
+        // print('startTime $startTime');
+        if (startTime == null) return;
+
+        var dx = details.delta.dx;
+        var ddx = 300;
+
+        var newTime = startTime! + dx.toInt() * ddx;
+        // print('newTime $newTime');
+
+        widget.player.seek(Duration(milliseconds: newTime));
+        startTime = newTime;
+      },
+      onPanEnd: (details) {
+        ScaffoldFrameController controller = ScaffoldFrame.of(context);
+
+        startTime = null;
+        controller.hideFrame();
+      },
+    );
+  }
+}
+
 class PostVideoRoute extends StatefulWidget {
   const PostVideoRoute({
     super.key,

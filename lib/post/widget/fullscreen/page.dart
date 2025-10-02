@@ -104,7 +104,7 @@ class HorizontalVideoFullscreen extends StatelessWidget {
         child: Center(
           child: Hero(
             tag: post.link,
-            child: VideoGestures(
+            child: VideoTabMovingGesture(
               player: post.getVideo(context)!,
               child: PostVideoWidget(post: post),
             ),
