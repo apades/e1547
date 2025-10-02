@@ -267,91 +267,18 @@ class _VideoGestureState extends State<VideoGesture>
 
   @override
   Widget build(BuildContext context) {
+    VideoService service = context.watch<VideoService>();
+
     return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onDoubleTap: () async {
-        Duration current = widget.player.state.position;
-        bool boundOnZero = current == Duration.zero;
-        bool boundOnEnd = current == widget.player.state.duration;
-        if ((!widget.forward && boundOnZero) ||
-            (widget.forward && boundOnEnd)) {
-          return;
-        }
-
-        Duration target = current;
-        if (widget.forward) {
-          target += const Duration(seconds: 10);
-        } else {
-          target -= const Duration(seconds: 10);
-        }
-        setState(() {
-          combo++;
-        });
-
-        widget.player.seek(target);
-        comboReset?.cancel();
-        comboReset = Timer(
-          const Duration(milliseconds: 900),
-          () => setState(() => combo = 0),
-        );
-        await animationController.forward();
-        await animationController.reverse();
-      },
-      child: FadeTransition(
-        opacity: fadeAnimation,
-        child: Stack(
-          children: [
-            IconMessage(
-              icon: Icon(
-                widget.forward ? Icons.fast_forward : Icons.fast_rewind,
-                color: Colors.white,
-              ),
-              title: Text(
-                '${10 * combo} seconds',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                double size = constraints.maxHeight * 2;
-                return AnimatedBuilder(
-                  animation: fadeAnimation,
-                  builder: (context, child) => Stack(
-                    alignment: Alignment.center,
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned(
-                        right: widget.forward
-                            ? null
-                            : constraints.maxWidth * 0.2,
-                        left: widget.forward
-                            ? constraints.maxWidth * 0.2
-                            : null,
-                        child: Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).splashColor,
-                            borderRadius: widget.forward
-                                ? BorderRadius.only(
-                                    topLeft: Radius.circular(size),
-                                    bottomLeft: Radius.circular(size),
-                                  )
-                                : BorderRadius.only(
-                                    topRight: Radius.circular(size),
-                                    bottomRight: Radius.circular(size),
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      // behavior: HitTestBehavior.translucent,
+      // onLongPressStart: (details) => {service.playSpeed = 3.0},
+      // onLongPressEnd: (details) => {service.playSpeed = 1.0},
+      // onDoubleTap: () {
+      //   print('onDoubleTap');
+      //   // widget.player.state.playing
+      //   //     ? widget.player.pause()
+      //   //     : widget.player.play();
+      // },
     );
   }
 }
@@ -380,6 +307,56 @@ class VideoGestures extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class VideoTabMovingGesture extends StatefulWidget {
+  const VideoTabMovingGesture({
+    super.key,
+    required this.child,
+    required this.player,
+  });
+
+  final Widget child;
+  final VideoPlayer player;
+
+  @override
+  State<VideoTabMovingGesture> createState() => _VideoTabMovingGesture();
+}
+
+class _VideoTabMovingGesture extends State<VideoTabMovingGesture> {
+  int? startTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: widget.child,
+      onPanStart: (details) {
+        ScaffoldFrameController controller = ScaffoldFrame.of(context);
+
+        startTime = widget.player.state.position.inMilliseconds;
+        controller.showFrame();
+      },
+      onPanUpdate: (details) {
+        // print('startTime $startTime');
+        if (startTime == null) return;
+
+        var dx = details.delta.dx;
+        var ddx = 300;
+
+        var newTime = startTime! + dx.toInt() * ddx;
+        // print('newTime $newTime');
+
+        widget.player.seek(Duration(milliseconds: newTime));
+        startTime = newTime;
+      },
+      onPanEnd: (details) {
+        ScaffoldFrameController controller = ScaffoldFrame.of(context);
+
+        startTime = null;
+        controller.hideFrame();
+      },
     );
   }
 }

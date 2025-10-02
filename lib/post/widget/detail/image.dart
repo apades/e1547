@@ -29,7 +29,7 @@ class PostDetailVideo extends StatelessWidget {
     VideoPlayer player = post.getVideo(context)!;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => player.state.playing ? player.pause() : player.play(),
+      // onTap: () => player.state.playing ? player.pause() : player.play(),
       child: Stack(
         alignment: Alignment.center,
         fit: StackFit.passthrough,
@@ -112,19 +112,21 @@ class PostDetailImageActions extends StatelessWidget {
     super.key,
     required this.post,
     required this.child,
-    this.onOpen,
+    this.onEnterVerticalFullscreen,
+    this.onEnterHorizontalFullscreen,
   });
 
   final Post post;
   final Widget child;
-  final VoidCallback? onOpen;
+  final VoidCallback? onEnterVerticalFullscreen;
+  final VoidCallback? onEnterHorizontalFullscreen;
 
   @override
   Widget build(BuildContext context) {
     return PostsConnector(
       post: post,
       builder: (context, post) {
-        VoidCallback? onTap;
+        VoidCallback? onFullscreenIconTap;
 
         PostController controller = context.watch<PostController>();
         bool visible =
@@ -132,30 +134,52 @@ class PostDetailImageActions extends StatelessWidget {
             (!controller.isDenied(post) || post.isFavorited);
 
         if (visible) {
-          onTap = post.type == PostType.unsupported
+          onFullscreenIconTap = post.type == PostType.unsupported
               ? () => launch(post.file!)
-              : onOpen;
+              : onEnterVerticalFullscreen;
         }
 
         Widget fullscreenButton() {
-          if (post.type == PostType.video && onTap != null) {
-            return CrossFade.builder(
-              showChild: visible,
-              builder: (context) => Card(
-                elevation: 0,
-                color: Colors.black12,
-                child: InkWell(
-                  onTap: onTap,
-                  child: const Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(
-                      Icons.fullscreen,
-                      size: 24,
-                      color: Colors.white,
+          if (post.type == PostType.video && onFullscreenIconTap != null) {
+            return Row(
+              children: [
+                CrossFade.builder(
+                  showChild: visible,
+                  builder: (context) => Card(
+                    elevation: 0,
+                    color: Colors.black12,
+                    child: InkWell(
+                      onTap: onEnterHorizontalFullscreen,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.aspect_ratio,
+                          size: 24,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                CrossFade.builder(
+                  showChild: visible,
+                  builder: (context) => Card(
+                    elevation: 0,
+                    color: Colors.black12,
+                    child: InkWell(
+                      onTap: onFullscreenIconTap,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.fullscreen,
+                          size: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             );
           } else {
             return const SizedBox.shrink();
@@ -178,12 +202,25 @@ class PostDetailImageActions extends StatelessWidget {
         return Stack(
           fit: StackFit.passthrough,
           children: [
-            InkWell(
-              hoverColor: Colors.transparent,
-              onTap: player != null
-                  ? () => player.state.playing ? player.pause() : player.play()
-                  : onTap,
-              child: child,
+            GestureDetector(
+              onLongPressStart: (detail) {
+                if (player == null) return;
+                player.setRate(3);
+              },
+              onLongPressEnd: (detail) {
+                if (player == null) return;
+                player.setRate(1);
+              },
+              child: InkWell(
+                hoverColor: Colors.transparent,
+                onDoubleTap: () {
+                  if (player == null) return;
+
+                  player.state.playing ? player.pause() : player.play();
+                },
+                onTap: player != null ? () => {} : onFullscreenIconTap,
+                child: child,
+              ),
             ),
             Positioned(
               bottom: 0,
@@ -209,15 +246,22 @@ class PostDetailImageActions extends StatelessWidget {
 }
 
 class PostDetailImageDisplay extends StatelessWidget {
-  const PostDetailImageDisplay({super.key, required this.post, this.onTap});
+  const PostDetailImageDisplay({
+    super.key,
+    required this.post,
+    this.onEnterVerticalFullscreen,
+    this.onEnterHorizontalFullscreen,
+  });
 
   final Post post;
-  final VoidCallback? onTap;
+  final VoidCallback? onEnterVerticalFullscreen;
+  final VoidCallback? onEnterHorizontalFullscreen;
 
   @override
   Widget build(BuildContext context) {
     return PostDetailImageActions(
-      onOpen: onTap,
+      onEnterVerticalFullscreen: onEnterVerticalFullscreen,
+      onEnterHorizontalFullscreen: onEnterHorizontalFullscreen,
       post: post,
       child: PostImageOverlay(
         post: post,
